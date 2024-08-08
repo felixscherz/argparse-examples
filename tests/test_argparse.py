@@ -1,6 +1,8 @@
 import argparse
 import shlex
 
+import pytest
+
 
 def test_repeated_arguments_with_append():
     parser = argparse.ArgumentParser()
@@ -50,3 +52,19 @@ def test_repeated_arguments_with_append_and_list_type():
     options = parser.parse_args(command)
 
     assert options.arg == [["1"], ["2"], ["3"]]
+
+
+def test_differentiate_between_different_commands():
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(title="git")
+    log_parser = subparsers.add_parser("log")
+    diff_parser = subparsers.add_parser("diff")
+
+    log_parser.add_argument("--arg", required=True)
+
+    command = shlex.split("log --arg 1")
+    options = parser.parse_args(command)
+
+    with pytest.raises(SystemExit):
+        command = shlex.split("log")
+        options = parser.parse_args(command)

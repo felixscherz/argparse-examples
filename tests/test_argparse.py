@@ -56,7 +56,7 @@ def test_repeated_arguments_with_append_and_list_type():
 
 def test_differentiate_between_different_commands():
     parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers(title="git")
+    subparsers = parser.add_subparsers(title="git", dest="command")
     log_parser = subparsers.add_parser("log")
     diff_parser = subparsers.add_parser("diff")
 
@@ -64,7 +64,12 @@ def test_differentiate_between_different_commands():
 
     command = shlex.split("log --arg 1")
     options = parser.parse_args(command)
+    assert options.command == "log"
 
     with pytest.raises(SystemExit):
         command = shlex.split("log")
         options = parser.parse_args(command)
+
+    command = shlex.split("diff")
+    options = parser.parse_args(command)
+    assert options.command == "diff"

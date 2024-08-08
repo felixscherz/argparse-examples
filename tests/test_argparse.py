@@ -56,9 +56,9 @@ def test_repeated_arguments_with_append_and_list_type():
 
 def test_differentiate_between_different_commands():
     parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers(title="git", dest="command")
+    subparsers = parser.add_subparsers(title="git", dest="command", required=True)
     log_parser = subparsers.add_parser("log")
-    diff_parser = subparsers.add_parser("diff")
+    subparsers.add_parser("diff")
 
     log_parser.add_argument("--arg", required=True)
 
@@ -73,3 +73,22 @@ def test_differentiate_between_different_commands():
     command = shlex.split("diff")
     options = parser.parse_args(command)
     assert options.command == "diff"
+
+
+def test_subparsers_with_common_arguments():
+    parser = argparse.ArgumentParser()
+
+    # add_help=False is important to prevent conflicts with child parsers
+    common = argparse.ArgumentParser(add_help=False)
+    common_arg = common.add_argument("--common")
+
+    subparsers = parser.add_subparsers(title="git", dest="command", required=True)
+
+    subparsers.add_parser("log", parents=[common])
+    subparsers.add_parser("diff", parents=[common])
+
+    command = shlex.split("log --common abc")
+    options = parser.parse_args(command)
+    assert options.command == "log"
+    assert options.common == "abc"
+
